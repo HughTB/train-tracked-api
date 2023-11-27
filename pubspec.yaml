@@ -7,6 +7,10 @@ environment:
   sdk: ^3.0.7
 
 dependencies:
+  http: ^1.1.0
+  xml: ^6.4.2
+  xml2json: ^6.2.1
+  yaml: ^3.1.2
   # path: ^1.8.0
 
 dev_dependencies:
