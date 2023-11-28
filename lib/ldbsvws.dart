@@ -47,11 +47,11 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
-    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
-      results.add(Service.fromJson(serviceJson));
+    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
+      results.add(Service.fromBoardJson(serviceJson));
     }
   } else {
-    log("getArrivalsByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow)", true);
+    log("getArrivalsByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow):", true);
     log("Status: ${response.statusCode}", true);
     log("Body:   ${response.body}", true);
   }
@@ -91,13 +91,49 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
     for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
-      results.add(Service.fromJson(serviceJson));
+      results.add(Service.fromBoardJson(serviceJson));
     }
   } else {
-    log("getDeparturesByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow)", true);
+    log("getDeparturesByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow):", true);
     log("Status: ${response.statusCode}", true);
     log("Body:   ${response.body}", true);
   }
 
   return results;
+}
+
+Future<Service?> getServiceByRid(Uri ldb, String apiKey, String rid) async {
+  Service? result;
+
+  final body = '''
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
+    <soapenv:Header>
+      <typ:AccessToken>
+        <typ:TokenValue>$apiKey</typ:TokenValue>
+      </typ:AccessToken>
+    </soapenv:Header>
+    <soapenv:Body>
+      <ldb:GetServiceDetailsByRIDRequest>
+        <ldb:rid>$rid</ldb:rid>
+      </ldb:GetServiceDetailsByRIDRequest>
+    </soapenv:Body>
+  </soapenv:Envelope>
+  ''';
+
+  final response = await makeRequest(ldb, body);
+
+  if (response.statusCode == 200) {
+    final jsonTransform = Xml2Json();
+    jsonTransform.parse(response.body);
+    final jsonStr = jsonTransform.toParker();
+    Map<String, dynamic> jsonMap = json.decode(jsonStr);
+
+    result = Service.fromDetailsJson(jsonMap['soap:Envelope']['soap:Body']['GetServiceDetailsByRIDResponse']['GetServiceDetailsResult']);
+  } else {
+    log("getServiceByRid($ldb, APIKEY, $rid):", true);
+    log("Status: ${response.statusCode}", true);
+    log("Body:   ${response.body}", true);
+  }
+
+  return result;
 }
