@@ -1,3 +1,5 @@
+import 'package:date_time_format/date_time_format.dart';
+
 void log(String? text, bool error) {
-  print("${DateTime.now().toIso8601String()} - ${(error) ? "ERROR: " : "INFO: "} $text");
+  print("${DateTime.now().format('H:i:s')} - ${(error) ? "ERROR: " : "INFO: "}$text");
 }

@@ -7,7 +7,10 @@ environment:
   sdk: ^3.0.7
 
 dependencies:
+  date_time_format: ^2.0.1
   http: ^1.1.0
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
   xml: ^6.4.2
   xml2json: ^6.2.1
   yaml: ^3.1.2

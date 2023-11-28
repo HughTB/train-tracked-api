@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'station.dart';
 import 'stopping_point.dart';
 
@@ -8,13 +10,13 @@ class Service {
   late String operatorCode;
   String? sta;
   String? ata;
-  bool? forecastAta;
+  bool? ataForecast;
   String? std;
   String? atd;
-  bool? forecastAtd;
+  bool? atdForecast;
   String? platform;
-  late List<Station> origin = [];
-  late List<Station> destination = [];
+  late List<String> origin = [];
+  late List<String> destination = [];
   late List<StoppingPoint> stoppingPoints = [];
 
   // Apparently the 'correct' way to convert XML to Dart Classes is to convert to Json first
@@ -25,23 +27,23 @@ class Service {
     operatorCode = json['t10:operatorCode'];
     sta = json['t10:sta'];
     ata = (json['t10:ata'] != null) ? json['t10:ata'] : json['t10:eta'];
-    forecastAta = (json['t10:arrivalType'] == 'Actual') ? false : true;
+    ataForecast = (json['t10:arrivalType'] == 'Actual') ? false : true;
     std = json['t10:std'];
     atd = (json['t10:atd'] != null) ? json['t10:atd'] : json['t10:etd'];
-    forecastAtd = (json['t10:departureType'] == 'Actual') ? false : true;
+    atdForecast = (json['t10:departureType'] == 'Actual') ? false : true;
     platform = json['t10:platform'];
 
     if (json['t13:origin']['t6:location'][0] != null) {
       for (dynamic location in json['t13:origin']['t6:location']) {
-        origin.add(Station(location['t5:crs'], location['t5:locationName']));
+        origin.add(location['t5:crs']);
       }
-    } else { origin.add(Station(json['t13:origin']['t6:location']['t5:crs'], json['t13:origin']['t6:location']['t5:locationName'])); }
+    } else { origin.add(json['t13:origin']['t6:location']['t5:crs']); }
 
     if (json['t13:destination']['t6:location'][0] != null) {
       for (dynamic location in json['t13:destination']['t6:location']) {
-        destination.add(Station(location['t5:crs'], location['t5:locationName']));
+        destination.add(location['t5:crs']);
       }
-    } else { destination.add(Station(json['t13:destination']['t6:location']['t5:crs'], json['t13:destination']['t6:location']['t5:locationName'])); }
+    } else { destination.add(json['t13:destination']['t6:location']['t5:crs']); }
   }
 
   Service.fromDetailsJson(Map<String, dynamic> json) {
@@ -51,10 +53,10 @@ class Service {
     operatorCode = json['t10:operatorCode'];
     sta = null;
     ata = null;
-    forecastAta = null;
+    ataForecast = null;
     std = null;
     atd = null;
-    forecastAtd = null;
+    atdForecast = null;
     platform = null;
 
     for (dynamic location in json['t13:locations']['t13:location']) {
@@ -64,5 +66,24 @@ class Service {
     }
 
     // print(json['t13:locations']['t13:location']);
+  }
+
+  Map toJson() {
+    return {
+      'rid' : rid,
+      'trainId' : trainId,
+      'operator' : operator,
+      'operatorCode' : operatorCode,
+      'sta' : sta,
+      'ata' : ata,
+      'ataForecast' : ataForecast,
+      'std' : std,
+      'atd' : atd,
+      'atdForecast' : atdForecast,
+      'platform' : platform,
+      'origin' : origin,
+      'destination' : destination,
+      'stoppingPoints' : stoppingPoints.map((sp) => (sp.toJson())).toList(),
+    };
   }
 }
