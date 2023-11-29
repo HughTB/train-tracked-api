@@ -8,6 +8,8 @@ import 'package:yaml/yaml.dart';
 import 'package:train_tracked_api/ldbsvws.dart';
 import 'package:train_tracked_api/util.dart';
 
+late dynamic configMap;
+
 late String hostname;
 late int port;
 late String password;
@@ -18,19 +20,37 @@ late Uri ldbsvws;
 final app = Router();
 
 Future<int?> main(List<String> arguments) async {
-  final config = File('config.yaml').readAsStringSync();
-  final configMap = loadYaml(config);
+  if (await File('config.yaml').exists()) {
+    final config = File('config.yaml').readAsStringSync();
+    configMap = loadYaml(config);
+  } else {
+    log("Config file does not exist, or could not be loaded. Creating a new config.yaml", false);
+    final config = File('config.yaml');
+    config.writeAsStringSync('''
+    apiKey: null
+    
+    server:
+      hostname: '0.0.0.0'
+      port: 42069
+      password: 'courgette'
+    ''');
+    configMap = null;
+  }
 
-  hostname = configMap['server']['hostname'] ?? '0.0.0.0';
-  port = configMap['server']['port'] ?? 42069;
-  password = configMap['server']['password'] ?? "courgette";
+  hostname = configMap?['server']?['hostname'] ?? '0.0.0.0';
+  port = configMap?['server']?['port'] ?? 42069;
+  password = configMap?['server']?['password'] ?? "courgette";
   
-  apiKey = configMap['apiKey'];
-  ldbsvws = Uri.parse(configMap['ldbsvwsUrl'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsv13.asmx");
+  apiKey = configMap?['apiKey'];
+  ldbsvws = Uri.parse(configMap?['ldbsvwsUrl'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsv13.asmx");
 
   if (apiKey == null) {
     log("No OpenLDBSVWS API key specified. Terminating...", true);
     return -1;
+  }
+
+  if (password == "courgette") {
+    log("Using default token 'courgette'. While not foolproof security it's better than nothing", false);
   }
 
   app.get('/arrivals', (Request request) async {
