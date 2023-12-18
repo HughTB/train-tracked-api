@@ -26,7 +26,7 @@ class StoppingPoint {
       joinWithRid = json['t10:associations']['t10:association']['t10:rid'];
     }
 
-    cancelledHere = json['t9:isCancelled'];
+    cancelledHere = (json['t9:isCancelled'] == 'true') ? true : false;
   }
 
   Map toJson() {
