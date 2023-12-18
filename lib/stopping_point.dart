@@ -10,6 +10,7 @@ class StoppingPoint {
   bool? atdForecast;
   String? crs;
   String? joinWithRid;
+  bool? cancelledHere;
 
   StoppingPoint.fromJson(Map<String, dynamic> json) {
     platform = json['t9:platform'];
@@ -24,10 +25,13 @@ class StoppingPoint {
     if (json['t10:associations']?['t10:association']?['t10:category'] == "join") {
       joinWithRid = json['t10:associations']['t10:association']['t10:rid'];
     }
+
+    cancelledHere = json['t9:isCancelled'];
   }
 
   Map toJson() {
     return {
+      'cancelledHere' : cancelledHere,
       'platform' : platform,
       'sta' : sta,
       'ata' : ata,
