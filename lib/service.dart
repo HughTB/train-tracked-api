@@ -18,6 +18,7 @@ class Service {
   late List<String> origin = [];
   late List<String> destination = [];
   late List<StoppingPoint> stoppingPoints = [];
+  bool? cancelled;
 
   // Apparently the 'correct' way to convert XML to Dart Classes is to convert to Json first
   Service.fromBoardJson(Map<String, dynamic> json) {
@@ -44,6 +45,8 @@ class Service {
         destination.add(location['t5:crs']);
       }
     } else { destination.add(json['t13:destination']['t6:location']['t5:crs']); }
+
+    cancelled = (json['t10:isCancelled'] == "true") ? true : false;
   }
 
   Service.fromDetailsJson(Map<String, dynamic> json) {
@@ -84,6 +87,7 @@ class Service {
       'origin' : origin,
       'destination' : destination,
       'stoppingPoints' : stoppingPoints.map((sp) => (sp.toJson())).toList(),
+      'cancelled' : cancelled,
     };
   }
 }
