@@ -16,7 +16,7 @@ Future<http.Response> makeRequest(Uri uri, String soapBody) {
   );
 }
 
-Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int maxItems = 50, int timeWindow = 120}) async {
+Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int maxItems = 50, int timeWindow = 120, bool busServices = false}) async {
   List<Service> results = [];
 
   if (maxItems <= 0 || maxItems > 150 || timeWindow <= 0 || timeWindow > 1440) { return results; }
@@ -34,6 +34,7 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
         <ldb:crs>$crs</ldb:crs>
         <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
         <ldb:timeWindow>$timeWindow</ldb:timeWindow>
+        <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
       </ldb:GetArrivalBoardByCRSRequest>
     </soapenv:Body>
   </soapenv:Envelope>
@@ -47,11 +48,11 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
-    if (jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult']['t13:trainServices'] == null) {
+    if (jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult'][(busServices) ? 't13:busServices' : 't13:trainServices'] == null) {
       return results;
     }
 
-    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
+    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult'][(busServices) ? 't13:busServices' : 't13:trainServices']['t13:service']) {
       results.add(Service.fromBoardJson(serviceJson));
     }
   } else {
@@ -63,7 +64,7 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
   return results;
 }
 
-Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {int maxItems = 50, int timeWindow = 120}) async {
+Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {int maxItems = 50, int timeWindow = 120, bool busServices = false}) async {
   List<Service> results = [];
 
   if (maxItems <= 0 || maxItems > 150 || timeWindow <= 0 || timeWindow > 1440) { return results; }
@@ -81,6 +82,7 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
         <ldb:crs>$crs</ldb:crs>
         <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
         <ldb:timeWindow>$timeWindow</ldb:timeWindow>
+        <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
       </ldb:GetDepartureBoardByCRSRequest>
     </soapenv:Body>
   </soapenv:Envelope>
@@ -94,11 +96,13 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
-    if (jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices'] == null) {
+    print(response.body);
+
+    if (jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult'][(busServices) ? 't13:busServices' : 't13:trainServices'] == null) {
       return results;
     }
 
-    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
+    for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult'][(busServices) ? 't13:busServices' : 't13:trainServices']['t13:service']) {
       results.add(Service.fromBoardJson(serviceJson));
     }
   } else {

@@ -67,7 +67,11 @@ Future<int?> main(List<String> arguments) async {
 
     log("Request /arrivals?crs=${params['crs']}", false);
 
-    final results = await getArrivalsByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
+    final trainServices = await getArrivalsByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
+    final busServices = await getArrivalsByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase(), busServices: true);
+
+    final results = trainServices + busServices;
+
 
     return Response.ok(
       <String, dynamic> {
@@ -94,7 +98,10 @@ Future<int?> main(List<String> arguments) async {
 
     log("Request /departures?crs=${params['crs']}", false);
 
-    final results = await getDeparturesByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
+    final trainServices = await getDeparturesByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
+    final busServices = await getDeparturesByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase(), busServices: true);
+
+    final results = trainServices + busServices;
 
     return Response.ok(
       <String, dynamic> {
