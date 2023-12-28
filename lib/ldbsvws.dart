@@ -47,6 +47,10 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
+    if (jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult']['t13:trainServices'] == null) {
+      return results;
+    }
+
     for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetArrivalBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
       results.add(Service.fromBoardJson(serviceJson));
     }
@@ -89,6 +93,10 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
     jsonTransform.parse(response.body);
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
+
+    if (jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices'] == null) {
+      return results;
+    }
 
     for (Map<String, dynamic> serviceJson in jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult']['t13:trainServices']['t13:service']) {
       results.add(Service.fromBoardJson(serviceJson));

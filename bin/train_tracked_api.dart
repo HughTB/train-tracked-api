@@ -50,7 +50,7 @@ Future<int?> main(List<String> arguments) async {
   }
 
   if (password == "courgette") {
-    log("Using default token 'courgette'. While not foolproof security it's better than nothing", false);
+    log("Using default token 'courgette' - Please change this in the automatically generated config.yaml", false);
   }
 
   app.get('/arrivals', (Request request) async {
