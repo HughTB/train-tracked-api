@@ -22,22 +22,22 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
   if (maxItems <= 0 || maxItems > 150 || timeWindow <= 0 || timeWindow > 1440) { return results; }
 
   final body = '''
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
-    <soapenv:Header>
-      <typ:AccessToken>
-        <typ:TokenValue>$apiKey</typ:TokenValue>
-      </typ:AccessToken>
-    </soapenv:Header>
-    <soapenv:Body>
-      <ldb:GetArrivalBoardByCRSRequest>
-        <ldb:numRows>$maxItems</ldb:numRows>
-        <ldb:crs>$crs</ldb:crs>
-        <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
-        <ldb:timeWindow>$timeWindow</ldb:timeWindow>
-        <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
-      </ldb:GetArrivalBoardByCRSRequest>
-    </soapenv:Body>
-  </soapenv:Envelope>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
+  <soapenv:Header>
+    <typ:AccessToken>
+      <typ:TokenValue>$apiKey</typ:TokenValue>
+    </typ:AccessToken>
+  </soapenv:Header>
+  <soapenv:Body>
+    <ldb:GetArrivalBoardByCRSRequest>
+      <ldb:numRows>$maxItems</ldb:numRows>
+      <ldb:crs>$crs</ldb:crs>
+      <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
+      <ldb:timeWindow>$timeWindow</ldb:timeWindow>
+      <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
+    </ldb:GetArrivalBoardByCRSRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
   ''';
 
   final response = await makeRequest(ldb, body);
@@ -70,22 +70,22 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
   if (maxItems <= 0 || maxItems > 150 || timeWindow <= 0 || timeWindow > 1440) { return results; }
 
   final body = '''
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
-    <soapenv:Header>
-      <typ:AccessToken>
-        <typ:TokenValue>$apiKey</typ:TokenValue>
-      </typ:AccessToken>
-    </soapenv:Header>
-    <soapenv:Body>
-      <ldb:GetDepartureBoardByCRSRequest>
-        <ldb:numRows>$maxItems</ldb:numRows>
-        <ldb:crs>$crs</ldb:crs>
-        <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
-        <ldb:timeWindow>$timeWindow</ldb:timeWindow>
-        <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
-      </ldb:GetDepartureBoardByCRSRequest>
-    </soapenv:Body>
-  </soapenv:Envelope>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
+  <soapenv:Header>
+    <typ:AccessToken>
+      <typ:TokenValue>$apiKey</typ:TokenValue>
+    </typ:AccessToken>
+  </soapenv:Header>
+  <soapenv:Body>
+    <ldb:GetDepartureBoardByCRSRequest>
+      <ldb:numRows>$maxItems</ldb:numRows>
+      <ldb:crs>$crs</ldb:crs>
+      <ldb:time>${DateTime.now().toIso8601String()}</ldb:time>
+      <ldb:timeWindow>$timeWindow</ldb:timeWindow>
+      <ldb:services>${(busServices) ? "B" : "P"}</ldb:services>
+    </ldb:GetDepartureBoardByCRSRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
   ''';
 
   final response = await makeRequest(ldb, body);
@@ -95,8 +95,6 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
     jsonTransform.parse(response.body);
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
-
-    print(response.body);
 
     if (jsonMap['soap:Envelope']['soap:Body']['GetDepartureBoardByCRSResponse']['GetBoardResult'][(busServices) ? 't13:busServices' : 't13:trainServices'] == null) {
       return results;
@@ -118,19 +116,19 @@ Future<Service?> getServiceByRid(Uri ldb, String apiKey, String rid) async {
   Service? result;
 
   final body = '''
-  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
-    <soapenv:Header>
-      <typ:AccessToken>
-        <typ:TokenValue>$apiKey</typ:TokenValue>
-      </typ:AccessToken>
-    </soapenv:Header>
-    <soapenv:Body>
-      <ldb:GetServiceDetailsByRIDRequest>
-        <ldb:rid>$rid</ldb:rid>
-      </ldb:GetServiceDetailsByRIDRequest>
-    </soapenv:Body>
-  </soapenv:Envelope>
-  ''';
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv/">
+  <soapenv:Header>
+    <typ:AccessToken>
+      <typ:TokenValue>$apiKey</typ:TokenValue>
+    </typ:AccessToken>
+  </soapenv:Header>
+  <soapenv:Body>
+    <ldb:GetServiceDetailsByRIDRequest>
+      <ldb:rid>$rid</ldb:rid>
+    </ldb:GetServiceDetailsByRIDRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
+''';
 
   final response = await makeRequest(ldb, body);
 

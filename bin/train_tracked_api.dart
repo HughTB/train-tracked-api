@@ -27,12 +27,12 @@ Future<int?> main(List<String> arguments) async {
     log("Config file does not exist, or could not be loaded. Creating a new config.yaml", false);
     final config = File('config.yaml');
     config.writeAsStringSync('''
-    apiKey: null
-    
-    server:
-      hostname: '0.0.0.0'
-      port: 42069
-      password: 'courgette'
+apiKey: null
+
+server:
+  hostname: '0.0.0.0'
+  port: 42069
+  password: 'courgette'
     ''');
     configMap = null;
   }
