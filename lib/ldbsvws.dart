@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml2json/xml2json.dart';
 
 import 'package:train_tracked_api/service.dart';
-import 'package:train_tracked_api/util.dart';
+import 'package:train_tracked_api/logging.dart';
 
 Future<http.Response> makeRequest(Uri uri, String soapBody) {
   return http.post(
@@ -56,9 +56,9 @@ Future<List<Service>> getArrivalsByCrs(Uri ldb, String apiKey, String crs, {int 
       results.add(Service.fromBoardJson(serviceJson));
     }
   } else {
-    log("getArrivalsByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow):", true);
-    log("Status: ${response.statusCode}", true);
-    log("Body:   ${response.body}", true);
+    log.w("Failed request for getArrivalsByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow)");
+    log.w("Status: ${response.statusCode}");
+    log.w("If you are seeing this request fail frequently, please send a bug report to contact@train-tracked.com");
   }
 
   return results;
@@ -104,9 +104,9 @@ Future<List<Service>> getDeparturesByCrs(Uri ldb, String apiKey, String crs, {in
       results.add(Service.fromBoardJson(serviceJson));
     }
   } else {
-    log("getDeparturesByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow):", true);
-    log("Status: ${response.statusCode}", true);
-    log("Body:   ${response.body}", true);
+    log.w("Failed request for getDeparturesByCrs($ldb, APIKEY, $crs, $maxItems, $timeWindow)");
+    log.w("Status: ${response.statusCode}");
+    log.w("If you are seeing this request fail frequently, please send a bug report to contact@train-tracked.com");
   }
 
   return results;
@@ -140,9 +140,9 @@ Future<Service?> getServiceByRid(Uri ldb, String apiKey, String rid) async {
 
     result = Service.fromDetailsJson(jsonMap['soap:Envelope']['soap:Body']['GetServiceDetailsByRIDResponse']['GetServiceDetailsResult']);
   } else {
-    log("getServiceByRid($ldb, APIKEY, $rid):", true);
-    log("Status: ${response.statusCode}", true);
-    log("Body:   ${response.body}", true);
+    log.w("Failed request for getServiceByRid($ldb, APIKEY, $rid)");
+    log.w("Status: ${response.statusCode}");
+    log.w("If you are seeing this request fail frequently, please send a bug report to contact@train-tracked.com");
   }
 
   return result;
