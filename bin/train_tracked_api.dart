@@ -1,18 +1,17 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:yaml/yaml.dart';
 
-import 'package:train_tracked_api/ldbsvws.dart';
+import 'package:train_tracked_api/endpoints.dart';
 import 'package:train_tracked_api/logging.dart';
 
 late dynamic configMap;
 
 late String hostname;
 late int port;
-late String password;
+late String token;
 
 String? apiKey;
 late Uri ldbsvws;
@@ -29,115 +28,45 @@ Future<int?> main(List<String> arguments) async {
     log.i("Config file does not exist, or could not be loaded. Creating a new config.yaml");
     final config = File('config.yaml');
     config.writeAsStringSync('''
-apiKey: null
+ldbsvws:
+  key: null # Darwin LDBSVWS key
+  url: null # Uses the official NRE endpoint unless otherwise specified
 
 server:
   hostname: '0.0.0.0'
   port: 42069
-  password: 'courgette'
+  key: 'courgette'
+  url: null # URL to redirect to when request is made to the index
     ''');
     configMap = null;
   }
 
   hostname = configMap?['server']?['hostname'] ?? '0.0.0.0';
   port = configMap?['server']?['port'] ?? 42069;
-  password = configMap?['server']?['password'] ?? "courgette";
+  token = configMap?['server']?['key'] ?? "courgette";
   
-  apiKey = configMap?['apiKey'];
-  ldbsvws = Uri.parse(configMap?['ldbsvwsUrl'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsv13.asmx");
+  apiKey = configMap?['ldbsvws']?['key'];
+  ldbsvws = Uri.parse(configMap?['ldbsvws']?['url'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsv13.asmx");
 
   if (apiKey == null) {
     log.e("No OpenLDBSVWS API key specified. Terminating...");
     return -1;
   }
 
-  if (password == "courgette") {
-    log.w("Using default token 'courgette' - Please change this in the automatically generated config.yaml");
+  if (token == "courgette") {
+    log.w("Using default key 'courgette' - Please change this in config.yaml");
   }
 
-  app.get('/arrivals', (Request request) async {
-    final params = request.requestedUri.queryParameters;
+  Endpoints endpoints = Endpoints(token, apiKey!, ldbsvws);
 
-    if (params['token'] != password) {
-      log.i("Request /arrivals with invalid token");
-      return Response.forbidden('Invalid access token');
-    }
-    if (params['crs']?.length != 3) {
-      log.i("Request /arrivals with invalid crs");
-      return Response.badRequest();
-    }
+  // Add redirect if specified in config
+  if (configMap?['server']?['url'] != null) {
+    app.get('/', (Request request) { return Response.movedPermanently(configMap?['server']?['url']); });
+  }
 
-    log.i("Request /arrivals?crs=${params['crs']}");
-
-    final trainServices = await getArrivalsByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
-    final busServices = await getArrivalsByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase(), busServices: true);
-
-    final results = trainServices + busServices;
-
-
-    return Response.ok(
-      <String, dynamic> {
-        '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
-        '"services"' : jsonEncode(results),
-      }.toString(),
-      headers: {
-        "content-type" : "application/json",
-      },
-    );
-  });
-
-  app.get('/departures', (Request request) async {
-    final params = request.requestedUri.queryParameters;
-
-    if (params['token'] != password) {
-      log.i("Request /departures with invalid token");
-      return Response.forbidden('Invalid access token');
-    }
-    if (params['crs']?.length != 3) {
-      log.i("Request /departures with invalid crs");
-      return Response.badRequest();
-    }
-
-    log.i("Request /departures?crs=${params['crs']}");
-
-    final trainServices = await getDeparturesByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase());
-    final busServices = await getDeparturesByCrs(ldbsvws, apiKey!, params['crs']!.toUpperCase(), busServices: true);
-
-    final results = trainServices + busServices;
-
-    return Response.ok(
-      <String, dynamic> {
-        '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
-        '"services"' : jsonEncode(results),
-      }.toString(),
-      headers: {
-        "content-type" : "application/json",
-      },
-    );
-  });
-
-  app.get('/details', (Request request) async {
-    final params = request.requestedUri.queryParameters;
-
-    if (params['token'] != password) {
-      log.i("Request /details with invalid token");
-      return Response.forbidden('Invalid access token');
-    }
-
-    log.i("Request /details?rid=${params['rid']}");
-
-    final results = await getServiceByRid(ldbsvws, apiKey!, params['rid']!);
-
-    return Response.ok(
-      <String, dynamic> {
-        '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
-        '"services"' : jsonEncode(results),
-      }.toString(),
-      headers: {
-        "content-type" : "application/json",
-      },
-    );
-  });
+  app.get('/arrivals', endpoints.arrivals);
+  app.get('/departures', endpoints.departures);
+  app.get('/details', endpoints.details);
 
   await shelf_io.serve(app, hostname, port);
   log.i("Serving Train-Tracked API at http://$hostname:$port");
