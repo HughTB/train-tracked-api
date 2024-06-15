@@ -1,5 +1,3 @@
-import 'station.dart';
-
 class StoppingPoint {
   String? platform;
   String? sta;

@@ -23,6 +23,12 @@ class Endpoints {
     return crsList.contains(crs.toUpperCase());
   }
 
+  bool _isValidCrsList(String? crsList) {
+    if (crsList == null) { return false; }
+
+    return crsList.split(",").fold(true, (prev, curr) => _isValidCrs(curr) && prev);
+  }
+
   bool _isValidRid(String? rid) {
     if (rid == null || rid.length < 8 || rid.length > 16) { return false; }
 
@@ -94,7 +100,7 @@ class Endpoints {
       return Response.forbidden("Invalid api key");
     }
     if (!_isValidRid(params['rid'])) {
-
+      return Response.badRequest(body: "Invalid RID");
     }
 
     final results = await getServiceByRid(ldbsvws, apiKey, params['rid']!);
@@ -103,6 +109,31 @@ class Endpoints {
       <String, dynamic> {
         '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
         '"services"' : jsonEncode(results),
+      }.toString(),
+      headers: {
+        "content-type" : "application/json",
+      },
+    );
+  }
+
+  Future<Response> disruptions(Request request) async {
+    final params = request.requestedUri.queryParameters;
+
+    log.i("/disruptions?crs=${params['crs']}");
+
+    if (!_checkAuth(request)) {
+      return Response.forbidden("Invalid api key");
+    }
+    if (!_isValidCrsList(params['crs'])) {
+      return Response.badRequest(body: "One or more invalid CRS");
+    }
+
+    final results = await getDisruptionsByCrs(ldbsvws, apiKey, params['crs']!.split(","));
+
+    return Response.ok(
+      <String, dynamic> {
+        '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
+        '"disruptions"' : jsonEncode(results),
       }.toString(),
       headers: {
         "content-type" : "application/json",

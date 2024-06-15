@@ -1,7 +1,4 @@
-import 'dart:convert';
-
-import 'station.dart';
-import 'stopping_point.dart';
+import 'package:train_tracked_api/stopping_point.dart';
 
 class Service {
   late String rid;

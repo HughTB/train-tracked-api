@@ -67,6 +67,7 @@ server:
   app.get('/arrivals', endpoints.arrivals);
   app.get('/departures', endpoints.departures);
   app.get('/details', endpoints.details);
+  app.get('/disruptions', endpoints.disruptions);
 
   await shelf_io.serve(app, hostname, port);
   log.i("Serving Train-Tracked API at http://$hostname:$port");
