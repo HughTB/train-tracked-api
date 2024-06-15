@@ -177,8 +177,29 @@ Future<Map<String, List<Disruption>>> getDisruptionsByCrs(Uri ldb, String apiKey
     final jsonStr = jsonTransform.toParker();
     Map<String, dynamic> jsonMap = json.decode(jsonStr);
 
-    for (dynamic item in jsonMap['soap:Envelope']['soap:Body']['GetDisruptionListResponse']['GetDisruptionListResult']['t5:item']) {
+    // Yes this bit is horrible, no I'm not going to do anything about it right now
+    // Dart doesn't actually support XML so a wierd conversion to JSON first is the
+    // best it's going to be for the moment
+    if (jsonMap['soap:Envelope']['soap:Body']['GetDisruptionListResponse']['GetDisruptionListResult']['t5:item'] is Iterable) {
+      for (dynamic item in jsonMap['soap:Envelope']['soap:Body']['GetDisruptionListResponse']['GetDisruptionListResult']['t5:item']) {
+        List<Disruption> disruptions = [];
+
+        if (item['t5:disruptions'] != null) {
+          if (item['t5:disruptions']['t5:message'] is Iterable) {
+            for (dynamic disruption in item['t5:disruptions']['t5:message']) {
+              disruptions.add(Disruption.fromJson(disruption));
+            }
+          } else {
+            disruptions.add(
+                Disruption.fromJson(item['t5:disruptions']['t5:message']));
+          }
+        }
+
+        result[item['t5:crs']] = disruptions;
+      }
+    } else {
       List<Disruption> disruptions = [];
+      dynamic item = jsonMap['soap:Envelope']['soap:Body']['GetDisruptionListResponse']['GetDisruptionListResult']['t5:item'];
 
       if (item['t5:disruptions'] != null) {
         if (item['t5:disruptions']['t5:message'] is Iterable) {
@@ -186,7 +207,8 @@ Future<Map<String, List<Disruption>>> getDisruptionsByCrs(Uri ldb, String apiKey
             disruptions.add(Disruption.fromJson(disruption));
           }
         } else {
-          disruptions.add(Disruption.fromJson(item['t5:disruptions']['t5:message']));
+          disruptions.add(
+              Disruption.fromJson(item['t5:disruptions']['t5:message']));
         }
       }
 
