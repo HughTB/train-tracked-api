@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 
@@ -35,10 +36,14 @@ class Endpoints {
     return true; // We can't really do more filtering than this, as there is no actual defined format for an RID
   }
 
+  String _getRequestAddress(Request request) {
+    return (request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address ?? "unknown";
+  }
+
   Future<Response> arrivals(Request request) async {
     final params = request.requestedUri.queryParameters;
 
-    log.i("/arrivals?crs=${params['crs']}");
+    log.i("${_getRequestAddress(request)} - /arrivals?crs=${params['crs']}");
 
     if (!_checkAuth(request)) {
       return Response.forbidden("Invalid api key");
@@ -66,7 +71,7 @@ class Endpoints {
   Future<Response> departures(Request request) async {
     final params = request.requestedUri.queryParameters;
 
-    log.i("/departures?crs=${params['crs']}");
+    log.i("${_getRequestAddress(request)} - /departures?crs=${params['crs']}");
 
     if (!_checkAuth(request)) {
       return Response.forbidden("Invalid api key");
@@ -94,7 +99,7 @@ class Endpoints {
   Future<Response> details(Request request) async {
     final params = request.requestedUri.queryParameters;
 
-    log.i("/details?rid=${params['rid']}");
+    log.i("${_getRequestAddress(request)} - /details?rid=${params['rid']}");
 
     if (!_checkAuth(request)) {
       return Response.forbidden("Invalid api key");
@@ -118,8 +123,7 @@ class Endpoints {
 
   Future<Response> disruptions(Request request) async {
     final params = request.requestedUri.queryParameters;
-
-    log.i("/disruptions?crs=${params['crs']}");
+    log.i("${_getRequestAddress(request)} - /disruptions?crs=${params['crs']}");
 
     if (!_checkAuth(request)) {
       return Response.forbidden("Invalid api key");
