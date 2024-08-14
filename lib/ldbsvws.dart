@@ -222,3 +222,45 @@ Future<Map<String, List<Disruption>>> getDisruptionsByCrs(Uri ldb, String apiKey
 
   return result;
 }
+
+Future<Map<String, String>> getDisruptionReasonText(Uri ldbRef, String apiKey, int code) async {
+  Map<String, String> result = {};
+
+  final body = '''
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldbsv_ref/">
+   <soapenv:Header>
+      <typ:AccessToken>
+         <typ:TokenValue>$apiKey</typ:TokenValue>
+      </typ:AccessToken>
+   </soapenv:Header>
+   <soapenv:Body>
+      <ldb:GetReasonCodeRequest>
+         <ldb:reasonCode>$code</ldb:reasonCode>
+      </ldb:GetReasonCodeRequest>
+   </soapenv:Body>
+</soapenv:Envelope>
+''';
+
+  final response = await makeRequest(ldbRef, body);
+
+  if (response.statusCode == 200) {
+    final jsonTransform = Xml2Json();
+    jsonTransform.parse(response.body);
+    final jsonStr = jsonTransform.toParker();
+    Map<String, dynamic> jsonMap = json.decode(jsonStr);
+
+    result = {
+      'reasonCode': jsonMap['soap:Envelope']['soap:Body']['GetReasonCodeResponse']['GetReasonCodeResult']['t5:code'],
+      'delayText': jsonMap['soap:Envelope']['soap:Body']['GetReasonCodeResponse']['GetReasonCodeResult']['t5:lateReason'],
+      'cancelText': jsonMap['soap:Envelope']['soap:Body']['GetReasonCodeResponse']['GetReasonCodeResult']['t5:cancReason'],
+    };
+
+    return result;
+  } else {
+    log.w("Failed request for getDisruptionReasonText($ldbRef, APIKEY, $code)");
+    log.w("Status: ${response.statusCode}");
+    log.w("If you are seeing this request fail frequently, please send a bug report to bug-hunt@train-tracked.com");
+  }
+
+  return result;
+}

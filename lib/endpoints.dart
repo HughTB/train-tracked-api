@@ -11,8 +11,9 @@ class Endpoints {
   String passkey;
   String apiKey;
   Uri ldbsvws;
+  Uri ldbsvwsRef;
 
-  Endpoints(this.passkey, this.apiKey, this.ldbsvws);
+  Endpoints(this.passkey, this.apiKey, this.ldbsvws, this.ldbsvwsRef);
 
   bool _checkAuth(Request request) {
     return request.headers['x-api-key'] == passkey;
@@ -138,6 +139,30 @@ class Endpoints {
       <String, dynamic> {
         '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
         '"disruptions"' : jsonEncode(results),
+      }.toString(),
+      headers: {
+        "content-type" : "application/json",
+      },
+    );
+  }
+
+  Future<Response> disruptionCode(Request request) async {
+    final params = request.requestedUri.queryParameters;
+    log.i("${_getRequestAddress(request)} - /disruption-code?reason=${params['reason']}");
+
+    if (!_checkAuth(request)) {
+      return Response.forbidden("Invalid api key");
+    }
+    if (int.tryParse(params['reason'] ?? "") == null) {
+      return Response.badRequest(body: "Invalid reason code");
+    }
+
+    final results = await getDisruptionReasonText(ldbsvwsRef, apiKey, int.parse(params['reason']!));
+
+    return Response.ok(
+      <String, dynamic> {
+        '"generatedAt"' : '"${DateTime.now().toIso8601String()}"',
+        '"result"' : jsonEncode(results),
       }.toString(),
       headers: {
         "content-type" : "application/json",

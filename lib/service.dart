@@ -16,6 +16,10 @@ class Service {
   late List<String> destination = [];
   late List<StoppingPoint> stoppingPoints = [];
   bool? cancelled;
+  String? delayReason;
+  String? cancelReason;
+  int? numCoaches;
+  int? loadingPercentage;
 
   // Apparently the 'correct' way to convert XML to Dart Classes is to convert to Json first
   Service.fromBoardJson(Map<String, dynamic> json) {
@@ -44,6 +48,12 @@ class Service {
     } else { destination.add(json['t13:destination']['t6:location']['t5:crs']); }
 
     cancelled = (json['t10:isCancelled'] == "true") ? true : false;
+
+    delayReason = json['t13:delayReason'];
+    cancelReason = json['t13:cancelReason'];
+
+    numCoaches = (json['t13:length'] != null) ? int.tryParse(json['t13:length'] ?? "") : json['t13:formation']?['t13:coaches']?.length;
+    loadingPercentage = int.tryParse(json['t13:formation']?['t13:serviceLoading']?['t13:loadingPercentage'] ?? "");
   }
 
   Service.fromDetailsJson(Map<String, dynamic> json) {
@@ -65,7 +75,10 @@ class Service {
       }
     }
 
-    // print(json['t13:locations']['t13:location']);
+    delayReason = json['t13:delayReason'];
+    cancelReason = json['t13:cancelReason'];
+
+    numCoaches = (json['t13:length'] != null) ? int.tryParse(json['t13:length']) : json['t13:formation']?['t13:coaches']?.length;
   }
 
   Map toJson() {
@@ -74,6 +87,11 @@ class Service {
       'trainId' : trainId,
       'operator' : operator,
       'operatorCode' : operatorCode,
+      'cancelled' : cancelled,
+      'delayReason': delayReason,
+      'cancelReason': cancelReason,
+      'numCoaches': numCoaches,
+      'loadingPercentage': loadingPercentage,
       'sta' : sta,
       'ata' : ata,
       'ataForecast' : ataForecast,
@@ -84,7 +102,6 @@ class Service {
       'origin' : origin,
       'destination' : destination,
       'stoppingPoints' : stoppingPoints.map((sp) => (sp.toJson())).toList(),
-      'cancelled' : cancelled,
     };
   }
 }

@@ -15,6 +15,7 @@ late String token;
 
 String? apiKey;
 late Uri ldbsvws;
+late Uri ldbsvwsRef;
 
 final app = Router();
 
@@ -31,6 +32,7 @@ Future<int?> main(List<String> arguments) async {
 ldbsvws:
   key: null # Darwin LDBSVWS key
   url: null # Uses the official NRE endpoint unless otherwise specified
+  ref-url: null # Uses the official NRE reference endpoint unless otherwise specified
 
 server:
   hostname: '0.0.0.0'
@@ -47,6 +49,7 @@ server:
   
   apiKey = configMap?['ldbsvws']?['key'];
   ldbsvws = Uri.parse(configMap?['ldbsvws']?['url'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsv13.asmx");
+  ldbsvwsRef = Uri.parse(configMap?['ldbsvws']?['ref-url'] ?? "https://lite.realtime.nationalrail.co.uk/OpenLDBSVWS/ldbsvref1.asmx");
 
   if (apiKey == null) {
     log.e("No OpenLDBSVWS API key specified. Terminating...");
@@ -57,7 +60,7 @@ server:
     log.w("Using default key 'courgette' - Please change this in config.yaml");
   }
 
-  Endpoints endpoints = Endpoints(token, apiKey!, ldbsvws);
+  Endpoints endpoints = Endpoints(token, apiKey!, ldbsvws, ldbsvwsRef);
 
   // Add redirect if specified in config
   if (configMap?['server']?['url'] != null) {
@@ -68,6 +71,7 @@ server:
   app.get('/departures', endpoints.departures);
   app.get('/details', endpoints.details);
   app.get('/disruptions', endpoints.disruptions);
+  app.get('/disruption-code', endpoints.disruptionCode);
 
   await shelf_io.serve(app, hostname, port);
   log.i("Serving Train-Tracked API at http://$hostname:$port");
