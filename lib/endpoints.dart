@@ -38,7 +38,7 @@ class Endpoints {
   }
 
   String _getRequestAddress(Request request) {
-    return (request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address ?? "unknown";
+    return request.headers['X-Real-IP'] ?? ((request.context['shelf.io.connection_info'] as HttpConnectionInfo?)?.remoteAddress.address ?? "unknown");
   }
 
   Future<Response> arrivals(Request request) async {

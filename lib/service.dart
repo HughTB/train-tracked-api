@@ -52,7 +52,8 @@ class Service {
     delayReason = json['t13:delayReason'];
     cancelReason = json['t13:cancelReason'];
 
-    numCoaches = (json['t13:length'] != null) ? int.tryParse(json['t13:length'] ?? "") : json['t13:formation']?['t13:coaches']?.length;
+    // Yes this is horrible, yes this is necessary. Most TOCs either don't report coach numbers, or report it correctly but some do report it but in a non-standard way   
+    numCoaches = (json['t13:length'] != null) ? int.tryParse(json['t13:length'] ?? "") : (json['t13:formation']?['t13:coaches']?.length == 1) ? (json['t13:formation']?['t13:coaches']?['t12:coach']?.length) : (json['t13:formation']?['t13:coaches']?.length);
     loadingPercentage = int.tryParse(json['t13:formation']?['t13:serviceLoading']?['t13:loadingPercentage'] ?? "");
   }
 
