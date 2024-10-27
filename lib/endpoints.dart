@@ -57,6 +57,7 @@ class Endpoints {
     final busServices = await getArrivalsByCrs(ldbsvws, apiKey, params['crs']!.toUpperCase(), busServices: true);
 
     final results = trainServices + busServices;
+    results.sort((a, b) => (DateTime.tryParse(a.ata ?? "")?.compareTo(DateTime.tryParse(b.ata ?? "") ?? DateTime(0)) ?? 0));
 
     return Response.ok(
       <String, dynamic> {
@@ -85,6 +86,7 @@ class Endpoints {
     final busServices = await getDeparturesByCrs(ldbsvws, apiKey, params['crs']!.toUpperCase(), busServices: true);
 
     final results = trainServices + busServices;
+    results.sort((a, b) => (DateTime.tryParse(a.atd ?? "")?.compareTo(DateTime.tryParse(b.atd ?? "") ?? DateTime(0)) ?? 0));
 
     return Response.ok(
       <String, dynamic> {
